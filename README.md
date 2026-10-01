@@ -1,0 +1,227 @@
+# Easy ECG Review
+
+Local conversion and review reports for the **Creative PC-80B Easy ECG** handheld
+monitor. Read its device `README.TXT` and numbered SCP files, reconstruct selected
+recording sessions, export unfiltered **EDF+ / WFDB**, and create German PDF
+reports. Python, Linux desktop GUI and command line. Current version: **0.2.0**.
+
+[Deutsche Anleitung](README.de.md) · [Methods](docs/METHODS.md) ·
+[Validation results](docs/VALIDATION.md) · [Format](docs/FORMAT.md) ·
+[Viewers](docs/TOOLS.md) · [Change log](CHANGELOG.md)
+
+**Experimental software, not a validated medical device.** Beat and rhythm
+annotations are unconfirmed review candidates. Artifacts can resemble arrhythmia;
+real beats and abnormalities can be missed. Counts are not clinical PAC/PVC
+counts or a reliable burden estimate. This tool cannot diagnose or exclude heart
+disease and does not replace a clinician, 12-lead ECG or clinical Holter recording.
+
+## Install
+
+Python 3.10 or newer; no C/C++ compiler required. On Ubuntu/Debian:
+
+```bash
+sudo apt install python3-venv python3-tk
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install .
+easyecg gui
+```
+
+Installation downloads dependencies. Conversion and reports then run locally;
+the main processing command makes no network requests. Tkinter is required only
+for the GUI. On a headless machine use the CLI.
+
+## Select and convert sessions
+
+In the GUI, choose a ZIP or device directory. The session table displays IDs,
+device start/end times, estimated duration and file ranges. Use **Ctrl / Shift**
+for multiple selection, or **Alle auswählen / Keine auswählen**. Press
+**Ausgewählte Messreihen konvertieren**. Changing the input requires reloading the
+table, preventing conversion with a stale selection. An empty selection is an
+error; it never silently selects everything. A manually entered path can be
+loaded with **Messreihen laden**.
+
+```bash
+# List sessions first (inventory checks index and boundary SCP files only):
+easyecg list '/path/device.zip'
+easyecg list '/path/device.zip' --json
+
+# Select session IDs from the device README; fully validate only those files:
+easyecg run '/path/device.zip' -o '/path/results' --recordings 1 2
+
+# Omit --recordings to convert every indexed session:
+easyecg run '/path/device-directory' -o '/path/all-results' --full-curves
+```
+
+Use a **new or empty output directory**, outside the input directory. Files are
+not silently overwritten. Interior files in the inventory are validated when
+selected for conversion; “boundary files OK” is not a guarantee that a session
+is intact. A corrupt unselected recording does not block conversion of a valid
+selection. Lapses in time or calibration split sessions into parts.
+
+## Display gain and filters
+
+The configurable **PDF gain factor defaults to 2**, twice the v0.1 display gain:
+
+| Factor | Review strips | Full raw overview |
+| --- | --- | --- |
+| `1` | 10 mm/mV, 25 mm/s | 5 mm/mV, 12.5 mm/s |
+| `2` (default) | 20 mm/mV, 25 mm/s | 10 mm/mV, 12.5 mm/s |
+
+```bash
+easyecg run '/path/device.zip' -o '/path/results-gain' \
+  --recordings 1 --gain-factor 2 --notch auto
+```
+
+Allowed factor: 0.25–8. Set it in the GUI or with `--gain-factor`.
+**Gain affects the PDF only**; EDF+/WFDB/NPZ retain the original calibration and
+samples. There is no automatic amplitude rescaling. Large excursions outside a
+panel are explicitly flagged; inspect EDF+ or choose a smaller factor. Every
+strip gives speed, gain and a calibrated pulse. Print at **100%**, without page
+fitting, for physical ECG scale.
+
+Detection/review uses a zero-phase 0.5–40 Hz bandpass. `--notch auto` applies a
+50/60 Hz notch only with spectral evidence; `off`, `50` and `60` are explicit
+alternatives. Auto may miss short/local interference; inspect quality flags and
+filter evidence in `analysis.json`. All signal exports remain **unfiltered**.
+
+```bash
+easyecg run '/path/device.zip' -o '/path/custom-results' \
+  --recordings 1 --config examples/analysis-config.json
+```
+
+The JSON example documents the configurable thresholds. `--notch` overrides its
+`mains_mode`; changing thresholds changes candidates, not diagnostic validity.
+
+## Outputs
+
+| File | Contents |
+| --- | --- |
+| `summary.pdf` | Signal coverage, candidates, session list, trends and review priorities |
+| `review_strips.pdf` | Selected 10-second raw/filtered strips with QRS and candidate markers |
+| `full_curves.pdf` | Optional complete raw waveform overview; potentially hundreds of pages |
+| `manifest.json` | Selection, selected SCP checksums/times, parameters, dependency versions, progress and output hashes |
+| `summary.json` | Aggregate metrics; confirmed extrasystoles deliberately `null` |
+| `r.../*.edf` | Single-channel EDF+, raw samples, experimental annotations |
+| `r.../*.hea`, `*.dat`, `*.qrs` | WFDB raw record and unclassified QRS candidates (`Q`, never assumed normal `N`) |
+| `r.../raw.npz` | Original 16-bit device words, centered integers, scale and sampling rate |
+| `r.../analysis.json` | Beats, event evidence, quality, filter parameters, detector failures/rejected proposals |
+| `r.../beats.csv` | QRS position, detector votes, template correlation, energy-width proxy, RR and labels |
+| `r.../events.csv`, `quality.csv`, `rejected_qrs.csv` | Review/audit tables; rejected proposals are not confirmed non-beats |
+| `ai_context.json` | Local, pseudonymized optional AI context; no automatic upload |
+
+Embedded SCP timestamps are **local device time**, with no verified timezone or
+clock accuracy. The lead/electrode geometry is unknown. Original status bits are
+preserved but not interpreted as diagnoses or contact flags.
+
+## What is screened?
+
+Three QRS detectors—**WFDB XQRS**, **NeuroKit2**, and **Kalidas/SWT**—are aligned,
+combined and checked for support, amplitude, waveform shape and refractory timing.
+Rhythm counting requires at least two supporting detectors and acceptable signal
+quality. No artificial beat insertion or RR “regularization” is applied.
+
+Screening covers:
+
+- Early/ectopic RR and morphology patterns, including frequent alternating
+  patterns and some non-compensatory early beats; possible narrow/similar and
+  different-shape subgroups for clinician review.
+- Candidate couplets, runs, bigeminy/trigeminy and fast different-shape runs.
+- Long RR intervals in usable signal, high/low estimated rate, irregular RR and
+  persistent irregularity lasting at least 90 seconds.
+- Clipping, baseline movement, steps, high-frequency noise, detector disagreement
+  and nearly flat signal/dropout of unclear cause.
+
+These are **overlapping pattern labels**, not confirmed PAC/PVC, AF, VT, pauses,
+asystole or conduction diagnoses. Subgroups/runs must not be added to beat counts.
+The QRS energy-width feature is **not** a clinical QRS-duration measurement.
+Nearly flat intervals are excluded from rhythm counts and shown as signal loss:
+a technical/contact problem is possible, but a rhythm cause is not ruled out.
+ST/ischemia, QT/QTc, pacemaker assessment and reliable AF/VT/PAC/PVC classification
+are not implemented. Inspect both raw and filtered curves.
+
+Ten 10-minute public MIT-BIH excerpts and a longer record test are documented in
+[VALIDATION.md](docs/VALIDATION.md). Performance varies markedly across records;
+errors remain, particularly with noise, irregular rhythms and frequent ectopy.
+These are limited development tests, not a clinical validation study.
+
+## Linux viewers and related projects
+
+| Project | Use |
+| --- | --- |
+| [EDFbrowser](https://www.teuniz.net/edfbrowser/) | Recommended first Linux viewer for EDF+ curves and annotations |
+| [PhysioNet WAVE](https://physionet.org/physiotools/wag/wave-1.htm) | WFDB display and annotation editing |
+| [WFDB Python](https://wfdb.readthedocs.io/) | Reading, plotting, detectors and reference benchmarking |
+| [easyecg2gdf](https://github.com/majbthrd/easyecg2gdf) | Original PC-80B SCP-to-GDF converter; format reference for this project |
+| [NeuroKit2](https://github.com/neuropsychology/NeuroKit) | Open-source physiology processing; two detectors used here |
+| [BioSig](https://biosig.sourceforge.net/) / [SigViewer](https://github.com/cbrnr/sigviewer) | Biosignal formats and visualization; useful for upstream GDF workflows |
+| [ECG-kit](https://physionet.org/content/ecgkit/1.0/) | MATLAB ECG research processing ecosystem |
+| [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/) | Public annotated reference signals |
+| [EDF+ specification](https://www.edfplus.info/specs/edfplus.html) | Open signal/annotation interchange specification |
+
+For a physician, offer `summary.pdf`, `review_strips.pdf` and EDF+ together with
+symptom times, activity, medications and electrode position. Confirm accepted
+formats with the practice: clinical Holter products such as
+[CardioDay](https://www.gehealthcare.com/en-gb/products/diagnostic-cardiology/ambulatory-ecg/cardioday-holter-ecg-software)
+and [medilog DARWIN2](https://www.schiller.ch/de/products/medilog-darwin2-p198)
+are manufacturer workflows; arbitrary EDF+ import is **not** guaranteed.
+See [TOOLS.md](docs/TOOLS.md).
+
+## Optional AI review
+
+The main run only writes a local context file. It contains no names, serial,
+original filenames or absolute dates, but remains **sensitive health data**.
+Summary-only context does not let a language model inspect ECG waveforms.
+`--ai-waveforms` explicitly adds up to six raw 10-second excerpts.
+
+For an already configured local [Ollama](https://docs.ollama.com/api/generate)
+server and installed model:
+
+```bash
+easyecg ai-review /path/results/ai_context.json \
+  --model YOUR_INSTALLED_MODEL -o /path/results/ai_unverified.md
+```
+
+Only this separate command sends the chosen context to localhost. Remote
+compatible HTTPS endpoints require `--endpoint` and `--allow-remote`. No model is
+automatically installed, and no cloud keys are integrated. AI text is unvalidated,
+saved separately and never changes candidate counts or the main report.
+
+## Development, recovery and publishing
+
+```bash
+python -m pip install -e '.[dev]'
+python -m pytest -q
+python -m build
+```
+
+Tests use synthetic signals and generated SCP files. Download public benchmark
+signals only with explicit `--download`:
+
+```bash
+python tools/benchmark_mitdb.py --download \
+  --records 100 200 108 207 101 103 201 208 105 219 \
+  --seconds 600 --cache private/public-cache -o private/benchmark.json
+```
+
+After each session, conversion writes its exports and updates `manifest.json`.
+Only `status: complete` means the aggregate reports and checksums were completed.
+After interruption, keep finished session folders and rerun remaining IDs into a
+**new** directory. See [RECOVERY.md](docs/RECOVERY.md).
+
+The source package contains no private ECG recordings or patient reports.
+Before publishing your own working tree, inspect `git status` and the staged
+files; `.gitignore` is a convenience, not a privacy guarantee. Publish source,
+tests and aggregate public-reference metrics. Keep all personal input/results
+outside the repository. No upload or GitHub publishing command runs automatically.
+[CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and proposed English
+[commit messages](docs/COMMIT_MESSAGES.md) are included.
+
+## License and attribution
+
+**GPL-2.0-or-later**, see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
+Format interpretation builds on Peter Lawrence’s `easyecg2gdf`, which credits
+George B. Moody and Edna S. Moody. Runtime dependencies retain their own licenses;
+no upstream converter or third-party binary is bundled. No manufacturer
+endorsement or clinical certification is claimed.

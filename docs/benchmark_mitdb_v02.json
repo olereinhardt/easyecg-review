@@ -1,0 +1,897 @@
+{
+  "software_version": "0.2.0",
+  "dataset": "MIT-BIH Arrhythmia Database 1.0.0",
+  "source": "https://physionet.org/content/mitdb/1.0.0/",
+  "profile": "preserve",
+  "limitations": [
+    "Limited excerpts; development benchmark, not clinical validation",
+    "Channel 0 resampled to 150Hz; preserve profile adapts amplitude scale to avoid artificial clipping",
+    "pc80b profile intentionally clips to the fixed hardware range; profiles are not comparable",
+    "Ectopic reference symbols A,a,J,S,V; escape beats E excluded",
+    "All annotated beats remain in denominator, including quality-excluded intervals",
+    "150ms matching does not evaluate clinical beat type, onset/duration or motion artifact reliability",
+    "No external expert review of patient ECG; template width is not a clinical QRS measurement"
+  ],
+  "records": [
+    {
+      "record": "100",
+      "channel": "channel 0",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.000806,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 760,
+        "truth_premature_ectopic_count": 6,
+        "qrs_matching_150ms": {
+          "tp": 760,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 754,
+          "fp": 0,
+          "fn": 6,
+          "sensitivity": 0.9921052631578947,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 596.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 6,
+          "ventricular_pattern_candidate": 0,
+          "narrow_premature_candidate": 6,
+          "morphology_outlier_candidate": 0,
+          "ectopic_couplet_candidate": 0,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "persistent_irregular_rr_candidate": 0,
+          "poor_signal": 2
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.000806,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 760,
+        "truth_premature_ectopic_count": 6,
+        "qrs_matching_150ms": {
+          "tp": 760,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 734,
+          "fp": 0,
+          "fn": 26,
+          "sensitivity": 0.9657894736842105,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 2,
+          "sensitivity": 0.6666666666666666,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 580.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 4,
+          "long_rr_candidate": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "poor_signal": 2
+        }
+      }
+    },
+    {
+      "record": "200",
+      "channel": "channel 0",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0013246945213897983,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 870,
+        "truth_premature_ectopic_count": 250,
+        "qrs_matching_150ms": {
+          "tp": 869,
+          "fp": 0,
+          "fn": 1,
+          "sensitivity": 0.9988505747126437,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 831,
+          "fp": 0,
+          "fn": 39,
+          "sensitivity": 0.9551724137931035,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 219,
+          "fp": 1,
+          "fn": 31,
+          "sensitivity": 0.876,
+          "positive_predictive_value": 0.9954545454545455
+        },
+        "usable_s": 576.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 220,
+          "ventricular_pattern_candidate": 195,
+          "narrow_premature_candidate": 25,
+          "morphology_outlier_candidate": 6,
+          "ectopic_couplet_candidate": 7,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 23,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 4,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 12,
+          "persistent_irregular_rr_candidate": 2,
+          "poor_signal": 4
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0013246945213897983,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 870,
+        "truth_premature_ectopic_count": 250,
+        "qrs_matching_150ms": {
+          "tp": 869,
+          "fp": 0,
+          "fn": 1,
+          "sensitivity": 0.9988505747126437,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 808,
+          "fp": 0,
+          "fn": 62,
+          "sensitivity": 0.9287356321839081,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 235,
+          "sensitivity": 0.06,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 560.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 15,
+          "long_rr_candidate": 0,
+          "fast_rate_candidate": 3,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 11,
+          "poor_signal": 4
+        }
+      }
+    },
+    {
+      "record": "108",
+      "channel": "channel 0",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.000806,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 562,
+        "truth_premature_ectopic_count": 7,
+        "qrs_matching_150ms": {
+          "tp": 549,
+          "fp": 16,
+          "fn": 13,
+          "sensitivity": 0.9768683274021353,
+          "positive_predictive_value": 0.9716814159292035
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 495,
+          "fp": 11,
+          "fn": 67,
+          "sensitivity": 0.8807829181494662,
+          "positive_predictive_value": 0.9782608695652174
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 6,
+          "fp": 13,
+          "fn": 1,
+          "sensitivity": 0.8571428571428571,
+          "positive_predictive_value": 0.3157894736842105
+        },
+        "usable_s": 546.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 19,
+          "ventricular_pattern_candidate": 14,
+          "narrow_premature_candidate": 5,
+          "morphology_outlier_candidate": 42,
+          "ectopic_couplet_candidate": 4,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "persistent_irregular_rr_candidate": 0,
+          "poor_signal": 7
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.000806,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 562,
+        "truth_premature_ectopic_count": 7,
+        "qrs_matching_150ms": {
+          "tp": 547,
+          "fp": 126,
+          "fn": 15,
+          "sensitivity": 0.9733096085409253,
+          "positive_predictive_value": 0.812778603268945
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 382,
+          "fp": 0,
+          "fn": 180,
+          "sensitivity": 0.6797153024911032,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 3,
+          "sensitivity": 0.5714285714285714,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 410.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 4,
+          "long_rr_candidate": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "poor_signal": 6
+        }
+      }
+    },
+    {
+      "record": "207",
+      "channel": "channel 0",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.002074855173353782,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 653,
+        "truth_premature_ectopic_count": 101,
+        "qrs_matching_150ms": {
+          "tp": 638,
+          "fp": 65,
+          "fn": 15,
+          "sensitivity": 0.9770290964777948,
+          "positive_predictive_value": 0.9075391180654339
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 388,
+          "fp": 52,
+          "fn": 265,
+          "sensitivity": 0.5941807044410413,
+          "positive_predictive_value": 0.8818181818181818
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 73,
+          "fp": 17,
+          "fn": 28,
+          "sensitivity": 0.7227722772277227,
+          "positive_predictive_value": 0.8111111111111111
+        },
+        "usable_s": 398.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 90,
+          "ventricular_pattern_candidate": 61,
+          "narrow_premature_candidate": 29,
+          "morphology_outlier_candidate": 68,
+          "ectopic_couplet_candidate": 6,
+          "ectopic_run_candidate": 1,
+          "bigeminy_candidate": 4,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 1,
+          "long_rr_candidate": 4,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 2,
+          "slow_rate_candidate": 1,
+          "irregular_rr_candidate": 6,
+          "persistent_irregular_rr_candidate": 1,
+          "poor_signal": 9
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.002074855173353782,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 653,
+        "truth_premature_ectopic_count": 101,
+        "qrs_matching_150ms": {
+          "tp": 647,
+          "fp": 107,
+          "fn": 6,
+          "sensitivity": 0.9908116385911179,
+          "positive_predictive_value": 0.8580901856763926
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 383,
+          "fp": 8,
+          "fn": 270,
+          "sensitivity": 0.5865237366003063,
+          "positive_predictive_value": 0.979539641943734
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 99,
+          "sensitivity": 0.019801980198019802,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 350.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 2,
+          "long_rr_candidate": 1,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 1,
+          "irregular_rr_candidate": 4,
+          "poor_signal": 8
+        }
+      }
+    },
+    {
+      "record": "101",
+      "channel": "MLII",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.001665978202282908,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 646,
+        "truth_premature_ectopic_count": 2,
+        "qrs_matching_150ms": {
+          "tp": 645,
+          "fp": 3,
+          "fn": 1,
+          "sensitivity": 0.9984520123839009,
+          "positive_predictive_value": 0.9953703703703703
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 538,
+          "fp": 0,
+          "fn": 108,
+          "sensitivity": 0.8328173374613003,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1,
+          "sensitivity": 0.5,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 506.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 1,
+          "ventricular_pattern_candidate": 0,
+          "narrow_premature_candidate": 1,
+          "morphology_outlier_candidate": 0,
+          "ectopic_couplet_candidate": 0,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "persistent_irregular_rr_candidate": 0,
+          "poor_signal": 5
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.001665978202282908,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 646,
+        "truth_premature_ectopic_count": 2,
+        "qrs_matching_150ms": {
+          "tp": 645,
+          "fp": 4,
+          "fn": 1,
+          "sensitivity": 0.9984520123839009,
+          "positive_predictive_value": 0.9938366718027735
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 522,
+          "fp": 0,
+          "fn": 124,
+          "sensitivity": 0.8080495356037152,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1,
+          "sensitivity": 0.5,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 490.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 1,
+          "long_rr_candidate": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "poor_signal": 5
+        }
+      }
+    },
+    {
+      "record": "103",
+      "channel": "MLII",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0011269124888078946,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 703,
+        "truth_premature_ectopic_count": 0,
+        "qrs_matching_150ms": {
+          "tp": 703,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 699,
+          "fp": 0,
+          "fn": 4,
+          "sensitivity": 0.9943100995732574,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": null,
+          "positive_predictive_value": null
+        },
+        "usable_s": 596.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 0,
+          "ventricular_pattern_candidate": 0,
+          "narrow_premature_candidate": 0,
+          "morphology_outlier_candidate": 0,
+          "ectopic_couplet_candidate": 0,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "persistent_irregular_rr_candidate": 0,
+          "poor_signal": 2
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0011269124888078946,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 703,
+        "truth_premature_ectopic_count": 0,
+        "qrs_matching_150ms": {
+          "tp": 703,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 680,
+          "fp": 0,
+          "fn": 23,
+          "sensitivity": 0.9672830725462305,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": null,
+          "positive_predictive_value": null
+        },
+        "usable_s": 580.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 0,
+          "long_rr_candidate": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "poor_signal": 2
+        }
+      }
+    },
+    {
+      "record": "201",
+      "channel": "MLII",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.000806,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 761,
+        "truth_premature_ectopic_count": 41,
+        "qrs_matching_150ms": {
+          "tp": 746,
+          "fp": 0,
+          "fn": 15,
+          "sensitivity": 0.9802890932982917,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 741,
+          "fp": 0,
+          "fn": 20,
+          "sensitivity": 0.973718791064389,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 17,
+          "fp": 18,
+          "fn": 24,
+          "sensitivity": 0.4146341463414634,
+          "positive_predictive_value": 0.4857142857142857
+        },
+        "usable_s": 596.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 35,
+          "ventricular_pattern_candidate": 12,
+          "narrow_premature_candidate": 23,
+          "morphology_outlier_candidate": 3,
+          "ectopic_couplet_candidate": 3,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 4,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 2,
+          "slow_rate_candidate": 3,
+          "irregular_rr_candidate": 19,
+          "persistent_irregular_rr_candidate": 2,
+          "poor_signal": 2
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.000806,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 761,
+        "truth_premature_ectopic_count": 41,
+        "qrs_matching_150ms": {
+          "tp": 746,
+          "fp": 0,
+          "fn": 15,
+          "sensitivity": 0.9802890932982917,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 715,
+          "fp": 0,
+          "fn": 46,
+          "sensitivity": 0.9395532194480947,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 1,
+          "fp": 15,
+          "fn": 40,
+          "sensitivity": 0.024390243902439025,
+          "positive_predictive_value": 0.0625
+        },
+        "usable_s": 570.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 16,
+          "long_rr_candidate": 5,
+          "fast_rate_candidate": 2,
+          "slow_rate_candidate": 3,
+          "irregular_rr_candidate": 17,
+          "poor_signal": 3
+        }
+      }
+    },
+    {
+      "record": "208",
+      "channel": "MLII",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0012035812851531546,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 1013,
+        "truth_premature_ectopic_count": 366,
+        "qrs_matching_150ms": {
+          "tp": 1005,
+          "fp": 0,
+          "fn": 8,
+          "sensitivity": 0.9921026653504442,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 909,
+          "fp": 0,
+          "fn": 104,
+          "sensitivity": 0.8973346495557749,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 175,
+          "fp": 0,
+          "fn": 191,
+          "sensitivity": 0.4781420765027322,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 546.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 175,
+          "ventricular_pattern_candidate": 136,
+          "narrow_premature_candidate": 39,
+          "morphology_outlier_candidate": 90,
+          "ectopic_couplet_candidate": 0,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 10,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 9,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 10,
+          "persistent_irregular_rr_candidate": 1,
+          "poor_signal": 7
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0012035812851531546,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 1013,
+        "truth_premature_ectopic_count": 366,
+        "qrs_matching_150ms": {
+          "tp": 1006,
+          "fp": 0,
+          "fn": 7,
+          "sensitivity": 0.9930898321816387,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 731,
+          "fp": 0,
+          "fn": 282,
+          "sensitivity": 0.721618953603159,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 327,
+          "sensitivity": 0.10655737704918032,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 470.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 39,
+          "long_rr_candidate": 0,
+          "fast_rate_candidate": 13,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 7,
+          "poor_signal": 12
+        }
+      }
+    },
+    {
+      "record": "105",
+      "channel": "MLII",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0010486618643009615,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 833,
+        "truth_premature_ectopic_count": 21,
+        "qrs_matching_150ms": {
+          "tp": 832,
+          "fp": 1,
+          "fn": 1,
+          "sensitivity": 0.9987995198079231,
+          "positive_predictive_value": 0.9987995198079231
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 826,
+          "fp": 1,
+          "fn": 7,
+          "sensitivity": 0.9915966386554622,
+          "positive_predictive_value": 0.9987908101571947
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 21,
+          "fp": 1,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 0.9545454545454546
+        },
+        "usable_s": 596.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 22,
+          "ventricular_pattern_candidate": 1,
+          "narrow_premature_candidate": 21,
+          "morphology_outlier_candidate": 0,
+          "ectopic_couplet_candidate": 0,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "persistent_irregular_rr_candidate": 0,
+          "poor_signal": 2
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0010486618643009615,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 833,
+        "truth_premature_ectopic_count": 21,
+        "qrs_matching_150ms": {
+          "tp": 832,
+          "fp": 1,
+          "fn": 1,
+          "sensitivity": 0.9987995198079231,
+          "positive_predictive_value": 0.9987995198079231
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 804,
+          "fp": 0,
+          "fn": 29,
+          "sensitivity": 0.9651860744297719,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 21,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 580.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 21,
+          "long_rr_candidate": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "poor_signal": 2
+        }
+      }
+    },
+    {
+      "record": "219",
+      "channel": "MLII",
+      "current": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0011487576041932781,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 757,
+        "truth_premature_ectopic_count": 30,
+        "qrs_matching_150ms": {
+          "tp": 757,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 519,
+          "fp": 0,
+          "fn": 238,
+          "sensitivity": 0.6856010568031704,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 15,
+          "fp": 34,
+          "fn": 15,
+          "sensitivity": 0.5,
+          "positive_predictive_value": 0.30612244897959184
+        },
+        "usable_s": 408.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 49,
+          "ventricular_pattern_candidate": 15,
+          "narrow_premature_candidate": 34,
+          "morphology_outlier_candidate": 0,
+          "ectopic_couplet_candidate": 2,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 4,
+          "persistent_irregular_rr_candidate": 0,
+          "poor_signal": 9
+        }
+      },
+      "v0_1_baseline": {
+        "duration_s": 600.0,
+        "scale_mv_per_lsb": 0.0011487576041932781,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 757,
+        "truth_premature_ectopic_count": 30,
+        "qrs_matching_150ms": {
+          "tp": 757,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 507,
+          "fp": 0,
+          "fn": 250,
+          "sensitivity": 0.6697490092470277,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 2,
+          "fp": 13,
+          "fn": 28,
+          "sensitivity": 0.06666666666666667,
+          "positive_predictive_value": 0.13333333333333333
+        },
+        "usable_s": 400.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 15,
+          "long_rr_candidate": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 3,
+          "poor_signal": 9
+        }
+      }
+    }
+  ]
+}

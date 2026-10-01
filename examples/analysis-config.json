@@ -1,0 +1,19 @@
+{
+  "quality_window_s": 10.0,
+  "fast_bpm": 100.0,
+  "slow_bpm": 50.0,
+  "long_rr_s": 2.0,
+  "premature_ratio": 0.85,
+  "min_agreement": 0.55,
+  "baseline_range_mv": 0.65,
+  "max_step_mv": 0.4,
+  "step_qrs_multiplier": 3.0,
+  "flat_std_mv": 0.006,
+  "irregular_cv": 0.18,
+  "mains_mode": "auto",
+  "highpass_hz": 0.5,
+  "lowpass_hz": 40.0,
+  "edge_exclusion_s": 2.0,
+  "dropout_min_s": 1.0,
+  "morphology_correlation": 0.8
+}

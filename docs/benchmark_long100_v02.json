@@ -1,0 +1,68 @@
+{
+  "software_version": "0.2.0",
+  "dataset": "MIT-BIH Arrhythmia Database 1.0.0",
+  "source": "https://physionet.org/content/mitdb/1.0.0/",
+  "profile": "preserve",
+  "limitations": [
+    "Limited excerpts; development benchmark, not clinical validation",
+    "Channel 0 resampled to 150Hz; preserve profile adapts amplitude scale to avoid artificial clipping",
+    "pc80b profile intentionally clips to the fixed hardware range; profiles are not comparable",
+    "Ectopic reference symbols A,a,J,S,V; escape beats E excluded",
+    "All annotated beats remain in denominator, including quality-excluded intervals",
+    "150ms matching does not evaluate clinical beat type, onset/duration or motion artifact reliability",
+    "No external expert review of patient ECG; template width is not a clinical QRS measurement"
+  ],
+  "records": [
+    {
+      "record": "100",
+      "channel": "MLII",
+      "current": {
+        "duration_s": 1800.0,
+        "scale_mv_per_lsb": 0.0014293656118697408,
+        "quantization_clipping_fraction": 0.0,
+        "truth_beat_count": 2265,
+        "truth_premature_ectopic_count": 34,
+        "qrs_matching_150ms": {
+          "tp": 2265,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_qrs_matching_all_truth": {
+          "tp": 2259,
+          "fp": 0,
+          "fn": 6,
+          "sensitivity": 0.9973509933774835,
+          "positive_predictive_value": 1.0
+        },
+        "ectopic_candidates_matching_all_truth": {
+          "tp": 34,
+          "fp": 0,
+          "fn": 0,
+          "sensitivity": 1.0,
+          "positive_predictive_value": 1.0
+        },
+        "usable_s": 1796.0,
+        "candidate_counts": {
+          "premature_beat_candidate": 34,
+          "ventricular_pattern_candidate": 1,
+          "narrow_premature_candidate": 33,
+          "morphology_outlier_candidate": 0,
+          "ectopic_couplet_candidate": 0,
+          "ectopic_run_candidate": 0,
+          "bigeminy_candidate": 0,
+          "trigeminy_candidate": 0,
+          "wide_complex_run_candidate": 0,
+          "long_rr_candidate": 0,
+          "signal_dropout": 0,
+          "fast_rate_candidate": 0,
+          "slow_rate_candidate": 0,
+          "irregular_rr_candidate": 0,
+          "persistent_irregular_rr_candidate": 0,
+          "poor_signal": 2
+        }
+      }
+    }
+  ]
+}
