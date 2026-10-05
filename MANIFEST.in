@@ -3,3 +3,6 @@ recursive-include docs *.md *.json
 recursive-include tools *.py
 recursive-include tests *.py
 recursive-include examples *.json
+
+recursive-include src/easyecg_review/locales *.json
+recursive-include src/easyecg_review/fonts *

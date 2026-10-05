@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "easyecg-review"
-version = "0.2.0"
+version = "0.3.0"
 description = "Local PC-80B conversion and non-diagnostic ECG review reports"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "GPL-2.0-or-later"
 license-files = ["LICENSE", "NOTICE.md"]
-dependencies = ["numpy>=1.24,<3", "scipy>=1.10,<2", "matplotlib>=3.7,<4", "reportlab>=4,<5", "wfdb>=4.1,<5", "pyedflib>=0.1.38,<0.2", "neurokit2>=0.2.10,<0.3", "PyWavelets>=1.6,<2"]
+dependencies = ["numpy>=1.24,<3", "scipy>=1.10,<2", "matplotlib>=3.7,<4", "reportlab>=4,<5", "wfdb>=4.1,<5", "pyedflib>=0.1.38,<0.2", "neurokit2>=0.2.10,<0.3", "PyWavelets>=1.6,<2", "arabic-reshaper>=3,<4", "python-bidi>=0.6,<1"]
 [project.optional-dependencies]
 dev = ["pytest>=8,<9", "build>=1,<2", "pypdf>=5,<7"]
 [project.scripts]
@@ -20,3 +20,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.setuptools.package-data]
+easyecg_review = ["locales/*.json", "fonts/*"]

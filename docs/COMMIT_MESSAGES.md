@@ -52,3 +52,20 @@ recordings and patient reports from the source archive.
 ```
 
 Suggested release title: `Release 0.2.0: session selection, display gain and ECG review improvements`
+
+
+## 0.3.0 localization
+
+```text
+feat(i18n): add 18 interface and ECG report languages
+
+Add UTF-8 catalogs, persistent live GUI language selection and explicit CLI
+language options. Localize review labels, quality reasons, clinical limitations
+and AI response requests while preserving analysis and technical exports.
+
+Embed licensed Unicode/CJK fonts and shape Arabic after logical line wrapping.
+Record the selected language and catalog checksum in the run manifest.
+
+Validation: 100 tests, all catalog placeholders and glyphs, multilingual PDFs,
+CLI forwarding, context isolation and unchanged EDF+ digital samples.
+```

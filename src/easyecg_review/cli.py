@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 import numpy as np
 from . import __version__
+from .i18n import tr,catalog,LANGUAGES,normalize,using_language,get_language,preferred_language,error_text
 from .io import load_recordings,list_recordings,FormatError
 from .analysis import Config,analyze
 from .export import write_exports
@@ -48,16 +49,16 @@ def run(args):
     if output.exists() and any(output.iterdir()):raise ValueError('Output directory must be new or empty (no silent overwrite)')
     if source.is_dir() and output.is_relative_to(source):raise ValueError('Choose output outside the input directory')
     config=load_config(args.config)
-    print('Prüfe Geräteindex, SCP-Struktur und CRCs ...',flush=True)
+    print(tr('checking'),flush=True)
     if args.notch is not None:config.mains_mode=args.notch
     recordings,manifest=load_recordings(source,args.allow_missing,args.recordings)
     output.mkdir(parents=True,exist_ok=True)
-    manifest.update({'software_version':__version__,'created_utc':datetime.now(timezone.utc).isoformat(),
+    manifest.update({'software_version':__version__,'language':get_language(),'catalog_sha256':hashlib.sha256(json.dumps(catalog(get_language()),ensure_ascii=False,sort_keys=True).encode('utf8')).hexdigest(),'created_utc':datetime.now(timezone.utc).isoformat(),
                      'selected_recordings':sorted({r.index for r in recordings}),'analysis_config':config.__dict__,
                      'display':{'gain_factor':args.gain_factor,'review_mm_per_mv':10*args.gain_factor,'full_mm_per_mv':5*args.gain_factor,'raw_exports_affected':False},
                      'validation_scope':'CRC and payload checks for selected sessions only; index inventory covers all sessions',
-                     'implementation_sha256':{name:hashlib.sha256(Path(__file__).with_name(name+'.py').read_bytes()).hexdigest() for name in ['io','analysis','detection','export','report','cli','gui']},
-                     'status':'processing','dependencies':{name:importlib.metadata.version(name) for name in ['numpy','scipy','wfdb','pyedflib','reportlab','matplotlib','neurokit2','PyWavelets']}})
+                     'implementation_sha256':{name:hashlib.sha256(Path(__file__).with_name(name+'.py').read_bytes()).hexdigest() for name in ['io','analysis','detection','export','report','cli','gui','i18n','pdftext']},
+                     'status':'processing','dependencies':{name:importlib.metadata.version(name) for name in ['numpy','scipy','wfdb','pyedflib','reportlab','matplotlib','neurokit2','PyWavelets','arabic-reshaper','python-bidi']}})
     write_json(output/'manifest.json',manifest)
     results=[];filtered_signals=[]
     for i,rec in enumerate(recordings,1):
@@ -73,11 +74,11 @@ def run(args):
         # Durable per-recording outputs and progress checkpoint for interrupted jobs.
         manifest['completed_outputs']=[r['recording']['name'] for r in results]
         write_json(output/'manifest.json',manifest)
-    print('Erzeuge PDF-Übersicht und Prüfstreifen ...',flush=True)
+    print(tr('creating_pdf'),flush=True)
     summary_pdf(output/'summary.pdf',recordings,results,manifest)
     strips_pdf(output/'review_strips.pdf',recordings,results,filtered_signals,args.strips_per_kind,args.gain_factor)
     if args.full_curves:
-        print('Erzeuge vollständiges Rohkurven-PDF ...',flush=True)
+        print(tr('creating_full'),flush=True)
         full_pdf(output/'full_curves.pdf',recordings,results,args.gain_factor)
     write_json(output/'summary.json',aggregate(results))
     write_json(output/'ai_context.json',create_context(recordings,results,args.ai_waveforms))
@@ -89,32 +90,35 @@ def run(args):
                 for chunk in iter(lambda:f.read(1024**2),b''):h.update(chunk)
             manifest['output_checksums'][path.relative_to(output).as_posix()]=h.hexdigest()
     write_json(output/'manifest.json',manifest)
-    print(f'Fertig: {output}\nsummary.pdf / review_strips.pdf / EDF+ / WFDB. Keine bestätigten Diagnosen.',flush=True)
+    print(tr('done')+f': {output}\nsummary.pdf / review_strips.pdf / EDF+ / WFDB. '+tr('warning'),flush=True)
 
 
-def main(argv=None):
-    parser=argparse.ArgumentParser(description='PC-80B: lokale Konvertierung und experimenteller EKG-Prüfbericht')
+def _main(argv=None):
+    parser=argparse.ArgumentParser(description=tr('cli_description'))
+    parser.add_argument('--language',type=normalize,choices=list(LANGUAGES),help=tr('help_language'))
     parser.add_argument('--version',action='version',version=__version__)
     sub=parser.add_subparsers(dest='command',required=True)
-    listing=sub.add_parser('list',help='Messreihen-Inventar für Auswahl (Randdateien geprüft)')
+    listing=sub.add_parser('list',help=tr('help_list'))
     listing.add_argument('input');listing.add_argument('--json',action='store_true')
-    p=sub.add_parser('run',help='ZIP oder Geräteverzeichnis einlesen')
+    p=sub.add_parser('run',help=tr('help_run'))
     p.add_argument('input');p.add_argument('-o','--output',required=True)
-    p.add_argument('--recordings',type=int,nargs='+',help='README-Messreihen-IDs auswählen')
-    p.add_argument('--gain-factor',type=float,default=2.,help='PDF-Verstärkungsfaktor: Standard 2 = 20 mm/mV (Prüfstreifen), 10 mm/mV (Übersicht); Rohdaten unverändert')
-    p.add_argument('--notch',choices=['auto','off','50','60'],help='Netzbrummfilter, überschreibt mains_mode in JSON')
+    p.add_argument('--recordings',type=int,nargs='+',help=tr('help_ids'))
+    p.add_argument('--gain-factor',type=float,default=2.,help=tr('help_gain'))
+    p.add_argument('--notch',choices=['auto','off','50','60'],help=tr('help_notch'))
     p.add_argument('--formats',nargs='+',choices=['edf','wfdb'],default=['edf','wfdb'])
-    p.add_argument('--config',help='JSON-Datei mit Heuristik-Schwellen')
-    p.add_argument('--allow-missing',action='store_true',help='Unvollständige/defekte Eingänge explizit erlauben; Lücken splitten')
-    p.add_argument('--full-curves',action='store_true',help='Alle Rohsamples zusätzlich als kompaktes PDF (groß)')
-    p.add_argument('--strips-per-kind',type=int,default=3,help='Prüfstreifen je Ereigniskategorie (0-20)')
-    p.add_argument('--ai-waveforms',action='store_true',help='Bis zu sechs Rohkurvenausschnitte in den lokalen KI-Kontext aufnehmen')
-    a=sub.add_parser('ai-review',help='KI-Kontext explizit an Ollama-Endpunkt senden')
+    p.add_argument('--config',help=tr('help_config'))
+    p.add_argument('--allow-missing',action='store_true',help=tr('help_missing'))
+    p.add_argument('--full-curves',action='store_true',help=tr('help_full'))
+    p.add_argument('--strips-per-kind',type=int,default=3,help=tr('help_strips'))
+    p.add_argument('--ai-waveforms',action='store_true',help=tr('help_waveforms'))
+    a=sub.add_parser('ai-review',help=tr('help_ai'))
     a.add_argument('context');a.add_argument('--model',required=True)
     a.add_argument('--endpoint',default='http://127.0.0.1:11434/api/generate')
-    a.add_argument('--allow-remote',action='store_true',help='KI-Kontext explizit an entfernten HTTPS-Endpunkt senden')
+    a.add_argument('--allow-remote',action='store_true',help=tr('help_remote'))
     a.add_argument('-o','--output',required=True)
-    sub.add_parser('gui',help='Einfache Tkinter-Oberfläche')
+    g=sub.add_parser('gui',help=tr('help_gui'))
+    for command_parser in (listing,p,a,g):
+        command_parser.add_argument('--language',type=normalize,choices=list(LANGUAGES),default=argparse.SUPPRESS,help=tr('help_language'))
     args=parser.parse_args(argv)
     try:
         if args.command=='run':
@@ -125,15 +129,22 @@ def main(argv=None):
             rows=list_recordings(Path(args.input).expanduser().resolve())
             if args.json:print(json.dumps(rows,ensure_ascii=False,allow_nan=False))
             else:
-                for r in rows:print(f"{r['index']:3d} | {r['start_device_local'] or '?'} | ~{r['duration_estimate_s']/60:g} min | SCP {r['from']}..{r['to']} | fehlend {r['missing_files']}"+(f" | {r['error']}" if r['error'] else ''))
-        elif args.command=='ai-review':ai_review(Path(args.context),Path(args.output),args.model,args.endpoint,args.allow_remote)
+                for r in rows:print(f"{r['index']:3d} | {r['start_device_local'] or '?'} | ~{r['duration_estimate_s']/60:g} min | SCP {r['from']}..{r['to']} | {tr('missing_files',count=r['missing_files'])}"+(f" | {r['error']}" if r['error'] else ''))
+        elif args.command=='ai-review':ai_review(Path(args.context),Path(args.output),args.model,args.endpoint,args.allow_remote,language=get_language())
         else:
             from .gui import launch
-            launch()
+            launch(get_language())
         return 0
     except (FormatError,ValueError,OSError,json.JSONDecodeError) as ex:
-        print(f'Fehler: {ex}',file=sys.stderr);return 2
+        print(tr('error')+': '+error_text(ex),file=sys.stderr);return 2
     except KeyboardInterrupt:
-        print('Abgebrochen. Fertige Messreihen bleiben im Ausgabeordner; manifest.json zeigt Fortschritt.',file=sys.stderr);return 130
+        print(tr('stopped')+' manifest.json',file=sys.stderr);return 130
+
+def main(argv=None):
+    argv=list(sys.argv[1:] if argv is None else argv)
+    probe=argparse.ArgumentParser(add_help=False)
+    probe.add_argument('--language',type=normalize)
+    preliminary,_=probe.parse_known_args(argv)
+    with using_language(preliminary.language or preferred_language()):return _main(argv)
 
 if __name__=='__main__':raise SystemExit(main())

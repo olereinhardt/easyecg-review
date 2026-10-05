@@ -108,3 +108,27 @@ executed. EDF+/WFDB viewer rendering is not vendor Holter-import validation.
 Sources: [MIT-BIH](https://physionet.org/content/mitdb/1.0.0/),
 [WFDB](https://wfdb.readthedocs.io/),
 [NeuroKit](https://neuropsychology.github.io/NeuroKit/functions/ecg.html).
+
+
+## 0.3.0 localization regression checks
+
+- 100 pytest checks pass in the Python 3.12 development environment.
+- All 18 catalogs contain the same 149 keys and named placeholders.
+- Every catalog glyph, including shaped Arabic presentation forms, is covered
+  by the bundled PDF fonts. No missing glyph warnings in final sample renders.
+- GUI language forwarding, context isolation and language preference aliases
+  are checked. The real Tk 8.6/Xft UI was switched through all 18 languages,
+  preserving selected recording IDs and input paths.
+- Summary (including trend), review-strip and full-curve PDFs were rendered for
+  all 18 languages using a 120-second synthetic signal; layouts were inspected.
+- EDF+ digital samples remain identical to the synthetic input with English,
+  Chinese, Japanese and Arabic report selections. Existing gain/export tests
+  and 39 analysis/input regressions continue to pass.
+- io.py, analysis.py, detection.py and export.py are byte-identical to the
+  recovered 0.2.0 release. The real personal ECG archive was not reprocessed
+  for this presentation-only release.
+- Wheel and source distribution contain every catalog and font/license asset.
+
+These are development checks, not clinical validation or professional review
+of the medical translations. PDF Arabic is drawn in visual glyph order; text
+extraction may return that visual order rather than logical Unicode order.

@@ -1,9 +1,15 @@
 # Easy ECG Review – deutsche Anleitung
 
-Version **0.2.0**: PC-80B-Gerätearchiv lokal lesen, einzelne Messreihen auswählen,
+Lokale Datenformat Umwandlung und Auswertesoftware für das **Lepu Medical Creative PC-80B Easy ECG** handheld EKG.
+
+Version **0.3.0**: PC-80B-Gerätearchiv lokal lesen, einzelne Messreihen auswählen,
 ungefiltertes EDF+/WFDB exportieren und deutsche PDF-Prüfberichte erzeugen.
 Die vollständige Projektbeschreibung mit Links und Veröffentlichungshinweisen
 steht im [englischen README](README.md).
+
+Diese Software wurde mit KI durch ChatGPT entwickelt. Sie ist nicht als Medizin Software, 
+sondern als praktisches Tool für alle Besitzer des PC-80B zum konvertieren und Anzeigen 
+der Datensätze und einfachere Kontrolle durch einen Arzt gedacht.
 
 **Experimentelle Auswertung, keine Diagnose.** Kandidaten können falsch sein,
 echte Ereignisse fehlen. Die Software liefert keine sichere Extrasystolenanzahl
@@ -93,3 +99,24 @@ Quellpaket, Build-Dateien, Tests, englische Commit-Vorschläge, GPL-Lizenz und
 GitHub-Workflow liegen bei. Persönliche Aufnahmen/Berichte gehören nicht ins
 öffentliche Repository. Bei Abbruch zeigt `manifest.json` fertige Reihen; in einen
 neuen Ordner mit verbleibenden IDs neu starten. Details: [Recovery](docs/RECOVERY.md).
+
+
+## Sprachwahl ab Version 0.3.0
+
+Oberfläche und PDF-Berichte unterstützen Deutsch, Englisch, Französisch,
+Spanisch, Portugiesisch, vereinfachtes Chinesisch, Japanisch, Russisch, Türkisch,
+Niederländisch, Italienisch, Arabisch, Ukrainisch, Polnisch, Tschechisch, Dänisch,
+Schwedisch und Norwegisch Bokmål. Im UI lässt sich die Sprache umschalten und
+wird gespeichert. Alternativ:
+
+```sh
+easyecg gui --language de
+easyecg run INPUT.zip -o OUTPUT --recordings 64 --language fr
+```
+
+Die 18 UTF-8-Sprachdateien liegen unter `src/easyecg_review/locales/`.
+PDF-Schriften sind mitgeliefert und werden eingebettet, einschließlich arabischer
+Schriftformung und Schreibrichtung. Messwerte und technische Exportcodes bleiben
+stabil. Einzelheiten und Hinweise zum Ergänzen von Sprachen stehen in
+[docs/LOCALIZATION.md](docs/LOCALIZATION.md). Medizinische Übersetzungen sind noch
+nicht durch muttersprachliche Ärzte geprüft.

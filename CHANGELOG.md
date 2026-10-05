@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 - 2026-10-02
+
+- Add 18 complete UTF-8 catalogs and context-local language selection.
+- Add a persistent live GUI language selector, explicit CLI language and AI response language.
+- Localize review PDFs, event labels, quality reasons and clinical limitations.
+- Embed Unicode/CJK fonts, wrap Arabic logically and shape each rendered line.
+- Preserve raw analysis/exports and record language/catalog checksum in manifests.
+- Add 61 locale, font, CLI, context-isolation and raw-export regression checks.
+
+
 ## 0.2.0
 
 - Configurable PDF gain, default factor 2; physical raw-export calibration unchanged.

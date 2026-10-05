@@ -1,5 +1,4 @@
-"""Tk desktop UI with explicit, source-bound session selection."""
-import json
+"""Tk desktop UI with source-bound selection and live language switching."""
 import math
 import queue
 import subprocess
@@ -7,81 +6,128 @@ import sys
 import threading
 from pathlib import Path
 from .io import list_recordings
+from .pdftext import visual,load_gui_fonts
+from .i18n import LANGUAGES,tr,get_language,set_language,preferred_language,save_language,error_text
 
 
-def build_run_command(source,output,selected,gain=2.,notch='auto',full=False):
-    """Pure helper shared by GUI tests; an empty selection never means all."""
-    if not source or not output:raise ValueError('Bitte Eingang und Ausgabe wählen.')
+def build_run_command(source,output,selected,gain=2.,notch='auto',full=False,language=None):
+    if not source or not output:raise ValueError(tr('missing_input'))
     ids=sorted(set(map(int,selected)))
-    if not ids:raise ValueError('Bitte mindestens eine Messreihe auswählen.')
+    if not ids:raise ValueError(tr('empty_selection'))
     gain=float(gain)
-    if not math.isfinite(gain) or not .25<=gain<=8:raise ValueError('Verstärkungsfaktor muss zwischen 0,25 und 8 liegen.')
-    if notch not in ('auto','off','50','60'):raise ValueError('Ungültige Netzfilter-Auswahl.')
+    if not math.isfinite(gain) or not .25<=gain<=8:raise ValueError(tr('invalid_gain'))
+    if notch not in ('auto','off','50','60'):raise ValueError(tr('invalid_notch'))
     cmd=[sys.executable,'-m','easyecg_review','run',source,'-o',output,'--recordings',*[str(i) for i in ids],
-         '--gain-factor',str(gain),'--notch',notch]
+         '--gain-factor',str(gain),'--notch',notch,'--language',language or get_language()]
     if full:cmd.append('--full-curves')
     return cmd
 
 
-def launch():
+def launch(language=None):
+    set_language(language or preferred_language())
+    load_gui_fonts()
     try:
         import tkinter as tk
         from tkinter import ttk,filedialog,messagebox
-    except ImportError as ex:raise ValueError('GUI requires tkinter: sudo apt install python3-tk') from ex
+        import tkinter.font as tkfont
+    except ImportError as ex:raise ValueError(tr('gui_tk')) from ex
     try:app=tk.Tk()
-    except tk.TclError as ex:raise ValueError('GUI needs a graphical desktop; use easyecg run for headless operation') from ex
-    app.title('Easy ECG Review 0.2');app.geometry('1020x790');app.minsize(800,650)
+    except tk.TclError as ex:raise ValueError(tr('gui_display')) from ex
+    app.title('Easy ECG Review 0.3');app.geometry('1120x880');app.minsize(850,750)
+    def ui(key,**values):return visual(tr(key,**values))
+    display_languages={code:visual(name,'ar') if code=='ar' else name for code,name in LANGUAGES.items()}
     source=tk.StringVar();output=tk.StringVar();full=tk.BooleanVar(value=False)
-    gain=tk.StringVar(value='2.0');notch=tk.StringVar(value='auto');status=tk.StringVar(value='Eingang wählen, Messreihen laden und auswählen.')
+    gain=tk.StringVar(value='2.0');notch=tk.StringVar(value='auto')
+    status=tk.StringVar();status_message=['ready',{}]
     frame=ttk.Frame(app,padding=16);frame.pack(fill='both',expand=True)
-    ttk.Label(frame,text='PC-80B: Konvertieren und Prüfbericht erstellen',font=('Sans',15,'bold')).pack(anchor='w')
-    ttk.Label(frame,text='Experimentelle Auswertung, keine Diagnose.').pack(anchor='w',pady=(4,8))
-    controls=[];messages=queue.Queue();process=[None];inventory={'source':None,'generation':0};loading=[False]
+    bindings=[];controls=[];messages=queue.Queue();process=[None]
+    inventory={'source':None,'generation':0};loading=[False];inventory_rows=[]
+    def status_set(key,**values):status_message[:]=[key,values];status.set(ui(key,**values))
+    def widget(cls,parent,key,**kwargs):
+        w=cls(parent,text=ui(key),**kwargs);bindings.append((w,key));return w
+    langrow=ttk.Frame(frame);langrow.pack(fill='x',pady=(0,8))
+    widget(ttk.Label,langrow,'language').pack(side='left')
+    language_var=tk.StringVar(value=display_languages[get_language()])
+    language_combo=ttk.Combobox(langrow,textvariable=language_var,values=list(display_languages.values()),state='readonly',width=22)
+    language_combo.pack(side='left',padx=8);controls.append(language_combo)
+    widget(ttk.Label,frame,'heading',font=('Sans',15,'bold')).pack(anchor='w')
+    widget(ttk.Label,frame,'warning',wraplength=1050).pack(fill='x',pady=(4,8))
     def browse_input(directory=False):
-        path=filedialog.askdirectory() if directory else filedialog.askopenfilename(filetypes=[('ZIP','*.zip'),('Alle Dateien','*')])
+        path=filedialog.askdirectory() if directory else filedialog.askopenfilename(filetypes=[('ZIP','*.zip'),(ui('all_files'),'*')])
         if path:source.set(path);load()
     def browse_output():
-        path=filedialog.askdirectory(title='Übergeordneten Ausgabeordner wählen')
+        path=filedialog.askdirectory(title=ui('choose_output'))
         if path:output.set(str(Path(path)/'easyecg-result'))
-    for label,var in [('Eingang (ZIP oder Geräteordner)',source),('Neuer oder leerer Ausgabeordner',output)]:
-        ttk.Label(frame,text=label).pack(anchor='w');entry=ttk.Entry(frame,textvariable=var);entry.pack(fill='x',pady=3);controls.append(entry)
+    for key,var in [('source',source),('output',output)]:
+        widget(ttk.Label,frame,key).pack(anchor='w')
+        entry=ttk.Entry(frame,textvariable=var);entry.pack(fill='x',pady=3);controls.append(entry)
     row=ttk.Frame(frame);row.pack(fill='x',pady=6)
-    for text,command in [('ZIP wählen',lambda:browse_input()),('Geräteordner wählen',lambda:browse_input(True)),('Ausgabe wählen',browse_output)]:
-        b=ttk.Button(row,text=text,command=command);b.pack(side='left',padx=(0,6));controls.append(b)
+    for key,command in [('zip',lambda:browse_input()),('folder',lambda:browse_input(True)),('choose_output',browse_output)]:
+        b=widget(ttk.Button,row,key,command=command);b.pack(side='left',padx=(0,6));controls.append(b)
     table_frame=ttk.Frame(frame);table_frame.pack(fill='both',expand=True,pady=6)
-    columns=('id','start','end','duration','files','state')
+    columns=('id','start','end','duration','files','inventory')
     tree=ttk.Treeview(table_frame,columns=columns,show='headings',selectmode='extended',height=8)
-    for col,title,width in zip(columns,('Nr.','Beginn (Gerätezeit)','Ende (Gerätezeit)','Dauer ca.','Dateien','Inventar'),(45,175,175,85,85,230)):
-        tree.heading(col,text=title);tree.column(col,width=width,minwidth=40,stretch=col=='state')
-    scroll=ttk.Scrollbar(table_frame,orient='vertical',command=tree.yview);tree.configure(yscrollcommand=scroll.set)
-    tree.pack(side='left',fill='both',expand=True);scroll.pack(side='right',fill='y')
-    ttk.Label(frame,text='Mehrfachauswahl mit Strg / Umschalt. Zeitbasis: Geräteuhr; Inventar prüft nur Randdateien.').pack(anchor='w')
-    selection_status=tk.StringVar(value='0 ausgewählt')
-    def update_selection(*_):selection_status.set(f'{len(tree.selection())} von {len(tree.get_children())} ausgewählt')
+    for col,width in zip(columns,(55,175,175,90,90,320)):
+        tree.heading(col,text=ui(col));tree.column(col,width=width,minwidth=40,stretch=col=='inventory')
+    scroll=ttk.Scrollbar(table_frame,orient='vertical',command=tree.yview)
+    hscroll=ttk.Scrollbar(table_frame,orient='horizontal',command=tree.xview)
+    tree.configure(yscrollcommand=scroll.set,xscrollcommand=hscroll.set)
+    tree.grid(row=0,column=0,sticky='nsew');scroll.grid(row=0,column=1,sticky='ns');hscroll.grid(row=1,column=0,sticky='ew')
+    table_frame.rowconfigure(0,weight=1);table_frame.columnconfigure(0,weight=1)
+    widget(ttk.Label,frame,'select_help',wraplength=1050).pack(fill='x')
+    selection_status=tk.StringVar()
+    def update_selection(*_):selection_status.set(ui('selection',selected=len(tree.selection()),total=len(tree.get_children())))
     tree.bind('<<TreeviewSelect>>',update_selection)
+    def populate():
+        selected=tree.selection();tree.delete(*tree.get_children())
+        for r in inventory_rows:
+            state=visual(error_text(r['error'])) if r['error'] else ui('missing_files',count=r['missing_files']) if r['missing_files'] else ui('boundary_ok')
+            tree.insert('', 'end',iid=str(r['index']),values=(r['index'],r['start_device_local'] or '?',r['end_device_local'] or '?',
+                f"{r['duration_estimate_s']/60:g} min",f"{r['from']}..{r['to']}",state))
+        tree.selection_set([i for i in selected if tree.exists(i)]);update_selection()
+    def change_language(*_):
+        code=next(k for k,v in display_languages.items() if v==language_var.get());set_language(code)
+        family='WenQuanYi Zen Hei' if code in ('zh','ja') else 'DejaVu Sans'
+        for name in ('TkDefaultFont','TkTextFont','TkMenuFont','TkHeadingFont','TkCaptionFont'):
+            tkfont.nametofont(name).configure(family=family,size=10)
+        try:save_language(code)
+        except OSError as ex:log.insert('end',str(ex)+'\n')
+        for w,key in bindings:
+            w.configure(text=ui(key))
+            if isinstance(w,ttk.Label):w.configure(anchor='e' if code=='ar' else 'w',justify='right' if code=='ar' else 'left')
+        for col,width in zip(columns,(55,175,175,90,90,320)):
+            tree.heading(col,text=ui(col))
+            tree.column(col,width=max(width,tkfont.nametofont('TkHeadingFont').measure(ui(col))+18))
+        status_label.configure(anchor='e' if code=='ar' else 'w')
+        log.tag_configure('rtl',justify='right')
+        status_set(status_message[0],**status_message[1]);populate()
+    language_combo.bind('<<ComboboxSelected>>',change_language)
     def load():
         if process[0] is not None:return
-        if not source.get():messagebox.showerror('Fehlender Eingang','Bitte einen Eingang wählen.');return
+        if not source.get():messagebox.showerror(ui('error'),ui('missing_input'));return
         path=str(Path(source.get()).expanduser().resolve());inventory['generation']+=1;ticket=inventory['generation']
-        inventory['source']=None;loading[0]=True;tree.delete(*tree.get_children());status.set('Lade Messreihen-Inventar ...');start_button.configure(state='disabled')
+        inventory['source']=None;loading[0]=True;inventory_rows.clear();tree.delete(*tree.get_children());update_selection()
+        status_set('loading');start_button.configure(state='disabled')
         def worker():
             try:messages.put(('inventory',ticket,path,list_recordings(Path(path)),None))
             except Exception as ex:messages.put(('inventory',ticket,path,None,str(ex)))
         threading.Thread(target=worker,daemon=True).start()
     selectrow=ttk.Frame(frame);selectrow.pack(fill='x',pady=6)
-    for label,command in [('Messreihen laden',load),('Alle auswählen',lambda:tree.selection_set(tree.get_children())),('Keine auswählen',lambda:tree.selection_remove(tree.selection()))]:
-        b=ttk.Button(selectrow,text=label,command=command);b.pack(side='left',padx=(0,6));controls.append(b)
+    for key,command in [('load',load),('all',lambda:tree.selection_set(tree.get_children())),('none',lambda:tree.selection_remove(tree.selection()))]:
+        b=widget(ttk.Button,selectrow,key,command=command);b.pack(side='left',padx=(0,6));controls.append(b)
     ttk.Label(selectrow,textvariable=selection_status).pack(side='left',padx=10)
     options=ttk.Frame(frame);options.pack(fill='x',pady=6)
-    ttk.Label(options,text='PDF-Verstärkungsfaktor').pack(side='left');spin=ttk.Spinbox(options,from_=.25,to=8,increment=.25,textvariable=gain,width=7);spin.pack(side='left',padx=6);controls.append(spin)
-    ttk.Label(options,text='2 = 20 mm/mV; 1 = bisherige Darstellung').pack(side='left')
-    ttk.Label(options,text='Netzfilter').pack(side='left',padx=(16,4));combo=ttk.Combobox(options,textvariable=notch,values=('auto','off','50','60'),state='readonly',width=6);combo.pack(side='left');controls.append(combo)
-    b=ttk.Checkbutton(frame,text='Zusätzlich vollständiges Rohkurven-PDF (viele Seiten)',variable=full);b.pack(anchor='w',pady=4);controls.append(b)
-    ttk.Label(frame,text='Verstärkung verändert nur PDFs. EDF+/WFDB bleiben in originalen mV.').pack(anchor='w')
-    log=tk.Text(frame,height=10,wrap='word');log.pack(fill='both',expand=True,pady=8)
-    ttk.Label(frame,textvariable=status).pack(anchor='w')
+    widget(ttk.Label,options,'gain').pack(side='left')
+    spin=ttk.Spinbox(options,from_=.25,to=8,increment=.25,textvariable=gain,width=7);spin.pack(side='left',padx=6);controls.append(spin)
+    widget(ttk.Label,options,'gain_help').pack(side='left')
+    widget(ttk.Label,options,'notch').pack(side='left',padx=(16,4))
+    combo=ttk.Combobox(options,textvariable=notch,values=('auto','off','50','60'),state='readonly',width=6);combo.pack(side='left');controls.append(combo)
+    b=widget(ttk.Checkbutton,frame,'full',variable=full);b.pack(anchor='w',pady=4);controls.append(b)
+    widget(ttk.Label,frame,'raw_help',wraplength=1050).pack(fill='x')
+    log=tk.Text(frame,height=8,wrap='word');log.pack(fill='both',expand=True,pady=8)
+    status_label=ttk.Label(frame,textvariable=status,wraplength=1050,anchor='e' if get_language()=='ar' else 'w');status_label.pack(fill='x')
     def enable_controls(enabled):
-        for widget in controls:widget.configure(state='readonly' if enabled and widget is combo else 'normal' if enabled else 'disabled')
+        for w in controls:w.configure(state='readonly' if enabled and w in (combo,language_combo) else 'normal' if enabled else 'disabled')
         start_button.configure(state='normal' if enabled and inventory['source'] else 'disabled')
     def reader(proc):
         for line in proc.stdout:messages.put(('log',line))
@@ -90,41 +136,39 @@ def launch():
         if process[0] is not None or loading[0]:return
         try:
             path=str(Path(source.get()).expanduser().resolve())
-            if inventory['source']!=path:raise ValueError('Eingang wurde geändert. Bitte Messreihen erneut laden.')
-            command=build_run_command(path,output.get(),tree.selection(),gain.get().replace(',','.'),notch.get(),full.get())
-            log.delete('1.0','end');process[0]=subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
-        except (ValueError,OSError) as ex:messagebox.showerror('Start nicht möglich',str(ex));return
-        enable_controls(False);status.set('Verarbeitung läuft ...');threading.Thread(target=reader,args=(process[0],),daemon=True).start()
+            if inventory['source']!=path:raise ValueError(tr('changed'))
+            cmd=build_run_command(path,output.get(),tree.selection(),gain.get().replace(',','.'),notch.get(),full.get())
+            log.delete('1.0','end');process[0]=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf8',bufsize=1)
+        except (ValueError,OSError) as ex:messagebox.showerror(ui('error'),visual(error_text(ex)));return
+        enable_controls(False);status_set('processing');threading.Thread(target=reader,args=(process[0],),daemon=True).start()
     def stop():
-        if process[0] is not None:process[0].terminate();status.set('Abbruch angefordert; fertige Messreihen bleiben erhalten.')
+        if process[0] is not None:process[0].terminate();status_set('stopped')
     def poll():
         while not messages.empty():
             item=messages.get()
-            if item[0]=='log':log.insert('end',item[1]);log.see('end')
+            if item[0]=='log':log.insert('end',visual(item[1]),'rtl' if get_language()=='ar' else ());log.see('end')
             elif item[0]=='done':
-                process[0]=None;enable_controls(True);status.set('Fertig' if item[1]==0 else f'Beendet mit Status {item[1]}: Details im Protokoll.')
-                if item[1]==0:messagebox.showinfo('Fertig','summary.pdf enthält die Übersicht. Die Auswertung ist unbestätigt.')
+                process[0]=None;enable_controls(True)
+                status_set('done') if item[1]==0 else status_set('failed',code=item[1])
+                if item[1]==0:messagebox.showinfo(ui('done'),ui('finish_info'))
             elif item[0]=='inventory':
                 _,ticket,path,rows,error=item
                 if ticket!=inventory['generation']:continue
                 loading[0]=False
-                if error:status.set('Inventar konnte nicht geladen werden.');messagebox.showerror('Eingangsfehler',error);continue
-                if path!=str(Path(source.get()).expanduser().resolve()):status.set('Eingang geändert; bitte erneut laden.');continue
-                inventory['source']=path
-                for r in rows:
-                    state=r['error'] or (f"{r['missing_files']} fehlen" if r['missing_files'] else 'Randdateien OK; Rest bei Konvertierung')
-                    tree.insert('', 'end',iid=str(r['index']),values=(r['index'],r['start_device_local'] or '?',r['end_device_local'] or '?',f"{r['duration_estimate_s']/60:g} min",f"{r['from']}..{r['to']}",state))
-                tree.selection_set(tree.get_children());update_selection();start_button.configure(state='normal');status.set('Messreihen geladen. Auswahl vor dem Start prüfen.')
+                if error:status_set('error');messagebox.showerror(ui('error'),visual(error_text(error)));continue
+                if path!=str(Path(source.get()).expanduser().resolve()):status_set('changed');continue
+                inventory['source']=path;inventory_rows[:]=rows;populate();tree.selection_set(tree.get_children());update_selection()
+                start_button.configure(state='normal');status_set('loaded')
         app.after(100,poll)
     def invalidate(*_):
-        inventory['source']=None;start_button.configure(state='disabled');status.set('Eingang geändert: Messreihen laden.')
+        inventory['source']=None;start_button.configure(state='disabled');status_set('changed')
     source.trace_add('write',invalidate)
     def close():
         if process[0] is not None:
-            if not messagebox.askyesno('Abbrechen','Verarbeitung läuft. Beenden?'):return
+            if not messagebox.askyesno(ui('cancel'),ui('close_question')):return
             stop()
         app.destroy()
     footer=ttk.Frame(frame);footer.pack(fill='x',pady=8)
-    start_button=ttk.Button(footer,text='Ausgewählte Messreihen konvertieren',command=start,state='disabled');start_button.pack(side='left')
-    ttk.Button(footer,text='Abbrechen',command=stop).pack(side='left',padx=8)
-    app.protocol('WM_DELETE_WINDOW',close);poll();app.mainloop()
+    start_button=widget(ttk.Button,footer,'convert',command=start,state='disabled');start_button.pack(side='left')
+    widget(ttk.Button,footer,'cancel',command=stop).pack(side='left',padx=8)
+    app.protocol('WM_DELETE_WINDOW',close);status_set('ready');update_selection();change_language();poll();app.mainloop()
